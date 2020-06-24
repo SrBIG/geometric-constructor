@@ -2,13 +2,18 @@ package issoft.isk.geometricconstructor.model.dto;
 
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 
-@EqualsAndHashCode(callSuper = true)
+import javax.validation.constraints.NotBlank;
+
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FigureDTO extends PictureElementDTO {
+public class FigureDTO {
+
+    Long id;
+
+    @NotBlank
     String type;
+
     FigurePropertyDTO property;
 }

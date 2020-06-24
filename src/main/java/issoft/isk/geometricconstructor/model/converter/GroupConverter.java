@@ -2,23 +2,30 @@ package issoft.isk.geometricconstructor.model.converter;
 
 import issoft.isk.geometricconstructor.model.dto.FigureDTO;
 import issoft.isk.geometricconstructor.model.dto.GroupDTO;
+import issoft.isk.geometricconstructor.model.entity.Figure;
 import issoft.isk.geometricconstructor.model.entity.FigureItem;
 import issoft.isk.geometricconstructor.model.entity.Group;
 import issoft.isk.geometricconstructor.model.entity.GroupItem;
+import issoft.isk.geometricconstructor.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import javax.persistence.Converter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
-@Converter
+@Component
 @RequiredArgsConstructor
 public class GroupConverter implements EntityConverter<Group, GroupDTO> {
+    @Autowired
+    final private GroupService groupService;
     @Autowired
     final private ModelMapper modelMapper;
     @Autowired
@@ -42,7 +49,29 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
 
     @Override
     public Group toEntity(GroupDTO dto) {
-        return null;
+        if (isNull(dto)) {
+            return null;
+        }
+
+        Group entity = modelMapper.map(dto, Group.class);
+
+        List<FigureItem> figureItems = convertToFigureItems(dto.getFigures());
+        List<GroupItem> groupItems = convertToGroupItems(dto.getGroups());
+
+        entity.setFigures(figureItems);
+        entity.setGroups(groupItems);
+
+        Long id = entity.getId();
+
+        if (nonNull(id)) {
+            Optional<Group> byId = groupService.findById(id);
+
+            if (byId.isEmpty()) {
+                entity.setId(null);
+            }
+        }
+
+        return entity;
     }
 
     private Map<Integer, GroupDTO> extractGroups(List<GroupItem> groupItems) {
@@ -67,5 +96,31 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
         }
 
         return figures;
+    }
+
+    private List<GroupItem> convertToGroupItems(Map<Integer, GroupDTO> groups) {
+        List<GroupItem> groupItems = new ArrayList<>();
+
+        for (Map.Entry<Integer, GroupDTO> entry : groups.entrySet()) {
+            Integer number = entry.getKey();
+            Group group = toEntity(entry.getValue());
+            GroupItem figureItem = new GroupItem(number, group);
+            groupItems.add(figureItem);
+        }
+
+        return groupItems;
+    }
+
+    private List<FigureItem> convertToFigureItems(Map<Integer, FigureDTO> figures) {
+        List<FigureItem> figureItems = new ArrayList<>();
+
+        for (Map.Entry<Integer, FigureDTO> entry : figures.entrySet()) {
+            Integer number = entry.getKey();
+            Figure figure = figureConverter.toEntity(entry.getValue());
+            FigureItem figureItem = new FigureItem(number, figure);
+            figureItems.add(figureItem);
+        }
+
+        return figureItems;
     }
 }
