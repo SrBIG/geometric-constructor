@@ -31,5 +31,5 @@ public class FigureTypeProperty {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "figure_type_property_value_xref", referencedColumnName = "figure_type_property_id")
-    List<FigureTypePropertyValue> values;
+    List<FigureTypePropertyValue> defaultValues;
 }
