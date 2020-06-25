@@ -69,22 +69,25 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
     private Map<Integer, GroupDTO> extractGroups(List<GroupItem> groupItems) {
         Map<Integer, GroupDTO> groups = new HashMap<>();
 
-        for (GroupItem groupItem : groupItems) {
-            Integer number = groupItem.getNumber();
-            GroupDTO figureDTO = toDto(groupItem.getGroup());
-            groups.put(number, figureDTO);
+        if (nonNull(groupItems)) {
+            for (GroupItem groupItem : groupItems) {
+                Integer number = groupItem.getNumber();
+                GroupDTO figureDTO = toDto(groupItem.getGroup());
+                groups.put(number, figureDTO);
+            }
         }
-
         return groups;
     }
 
     private Map<Integer, FigureDTO> extractFigures(List<FigureItem> figureItems) {
         Map<Integer, FigureDTO> figures = new HashMap<>();
 
-        for (FigureItem figureItem : figureItems) {
-            Integer number = figureItem.getNumber();
-            FigureDTO figureDTO = figureConverter.toDto(figureItem.getFigure());
-            figures.put(number, figureDTO);
+        if (nonNull(figureItems)) {
+            for (FigureItem figureItem : figureItems) {
+                Integer number = figureItem.getNumber();
+                FigureDTO figureDTO = figureConverter.toDto(figureItem.getFigure());
+                figures.put(number, figureDTO);
+            }
         }
 
         return figures;
@@ -93,7 +96,7 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
     private List<GroupItem> convertToGroupItems(Map<Integer, GroupDTO> groups) {
         List<GroupItem> groupItems = new ArrayList<>();
 
-        if (nonNull(groups)){
+        if (nonNull(groups)) {
             for (Map.Entry<Integer, GroupDTO> entry : groups.entrySet()) {
                 Integer number = entry.getKey();
                 Group group = toEntity(entry.getValue());
@@ -108,11 +111,13 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
     private List<FigureItem> convertToFigureItems(Map<Integer, FigureDTO> figures) {
         List<FigureItem> figureItems = new ArrayList<>();
 
-        for (Map.Entry<Integer, FigureDTO> entry : figures.entrySet()) {
-            Integer number = entry.getKey();
-            Figure figure = figureConverter.toEntity(entry.getValue());
-            FigureItem figureItem = new FigureItem(number, figure);
-            figureItems.add(figureItem);
+        if (nonNull(figures)) {
+            for (Map.Entry<Integer, FigureDTO> entry : figures.entrySet()) {
+                Integer number = entry.getKey();
+                Figure figure = figureConverter.toEntity(entry.getValue());
+                FigureItem figureItem = new FigureItem(number, figure);
+                figureItems.add(figureItem);
+            }
         }
 
         return figureItems;

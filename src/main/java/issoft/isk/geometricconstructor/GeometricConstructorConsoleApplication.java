@@ -39,7 +39,6 @@ public class GeometricConstructorConsoleApplication implements CommandLineRunner
 
     @Override
     public void run(String... args) {
-
         var blueTriangle = createFigureDTO(TRIANGLE, COLOR, "#007CCE");
         var greenTriangle = createFigureDTO(TRIANGLE, COLOR, "#6B8E23");
 
