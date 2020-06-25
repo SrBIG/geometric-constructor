@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 @Component
 @RequiredArgsConstructor
@@ -58,16 +57,6 @@ public class FigureConverter implements EntityConverter<Figure, FigureDTO> {
         FigureProperty figureProperty = convertToFigureProperty(dto.getProperty(), figureType);
         entity.setProperty(figureProperty);
 
-        Long id = entity.getId();
-
-        if (nonNull(id)) {
-            Optional<Figure> byId = figureService.findById(id);
-
-            if (byId.isEmpty()) {
-                entity.setId(null);
-            }
-        }
-
         return entity;
     }
 
@@ -86,12 +75,20 @@ public class FigureConverter implements EntityConverter<Figure, FigureDTO> {
     public FigureProperty convertToFigureProperty(FigurePropertyDTO figurePropertyDTO, FigureType figureType) {
         FigureProperty figureProperty = figurePropertyConverter.toEntity(figurePropertyDTO);
 
-        if (figureService.canFigureTypeHaveProperty(figureType, figureProperty)) {
+        if (isNull(figureProperty)) {
+            return null;
+        }
+
+        String figureTypeName = figureType.getName();
+        String propertyName = figureProperty.getProperty().getName();
+        String propertyValue = figureProperty.getValue().getValue();
+
+        if (figureService.canFigureTypeHaveProperty(figureTypeName, propertyName)) {
             return figureProperty;
         } else {
-            String msg = "Figure type " + figureType.getName() +
-                    " can not have property " + figureProperty.getProperty().getName() +
-                    " with value - " + figureProperty.getValue().getValue();
+            String msg = "Figure type " + figureTypeName +
+                    " can not have property " + propertyName +
+                    " with value - " + propertyValue;
 
             throw new ConvertException(msg);
         }

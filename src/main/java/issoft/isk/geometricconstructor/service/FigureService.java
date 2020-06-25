@@ -1,7 +1,6 @@
 package issoft.isk.geometricconstructor.service;
 
 import issoft.isk.geometricconstructor.model.entity.Figure;
-import issoft.isk.geometricconstructor.model.entity.FigureProperty;
 import issoft.isk.geometricconstructor.model.entity.FigureType;
 import issoft.isk.geometricconstructor.model.entity.FigureTypeProperty;
 import issoft.isk.geometricconstructor.model.entity.FigureTypePropertyValue;
@@ -14,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
@@ -60,24 +61,44 @@ public class FigureService {
         }
     }
 
-    public boolean canFigureTypeHaveProperty(FigureType figureType, FigureProperty figureProperty) {
-        List<FigureTypeProperty> allowedProperties = figureType.getProperties();
-        FigureTypeProperty property = figureProperty.getProperty();
+    @Transactional
+    public boolean canFigureTypeHaveProperty(String figureTypeName, String propertyName) {
+        boolean isAllowedProperty = false;
 
-        return allowedProperties.contains(property);
+        Optional<FigureType> figureTypeByName = findFigureTypeByName(figureTypeName);
+        Optional<FigureTypeProperty> figureTypePropertyByName = findFigureTypePropertyByName(propertyName);
+
+        if (figureTypeByName.isPresent() && figureTypePropertyByName.isPresent()){
+            FigureType figureType = figureTypeByName.get();
+            FigureTypeProperty figureTypeProperty = figureTypePropertyByName.get();
+
+            List<FigureTypeProperty> allowedProperties = figureType.getProperties();
+
+            isAllowedProperty = allowedProperties.isEmpty() || allowedProperties.contains(figureTypeProperty);
+        }
+
+        return isAllowedProperty;
     }
 
-    public boolean canFigureTypePropertyHaveValue(FigureTypeProperty property, FigureTypePropertyValue value) {
-        List<FigureTypePropertyValue> defaultValues = property.getDefaultValues();
+    @Transactional
+    public boolean canFigureTypePropertyHaveValue(String propertyName, String value) {
+        boolean isAllowedValue = false;
 
-        boolean isAllowedValue = nonNull(value);
+        Optional<FigureTypeProperty> byId = findFigureTypePropertyByName(propertyName);
 
-        if (!CollectionUtils.isEmpty(defaultValues)) {
-            isAllowedValue = defaultValues.contains(value);
+        if (byId.isPresent()) {
+            FigureTypeProperty property = byId.get();
+            List<FigureTypePropertyValue> defaultValues = property.getDefaultValues();
+            isAllowedValue = nonNull(value);
+
+            if (!CollectionUtils.isEmpty(defaultValues)) {
+                isAllowedValue = defaultValues.stream()
+                        .map(FigureTypePropertyValue::getValue)
+                        .collect(Collectors.toList())
+                        .contains(value);
+            }
         }
 
         return isAllowedValue;
     }
-
-
 }

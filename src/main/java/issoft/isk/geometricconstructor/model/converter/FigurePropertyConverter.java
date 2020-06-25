@@ -41,7 +41,7 @@ public class FigurePropertyConverter implements EntityConverter<FigureProperty, 
         String name = dto.getName();
         String value = dto.getValue();
 
-        FigureProperty entity = null;
+        FigureProperty entity;
 
         Optional<FigureTypeProperty> propertyOptional = figureService.findFigureTypePropertyByName(name);
         FigureTypePropertyValue propertyValue = figureService.getFigureTypePropertyValueByValue(value);
@@ -49,7 +49,7 @@ public class FigurePropertyConverter implements EntityConverter<FigureProperty, 
         if (propertyOptional.isPresent()) {
             FigureTypeProperty property = propertyOptional.get();
 
-            if (figureService.canFigureTypePropertyHaveValue(property, propertyValue)) {
+            if (figureService.canFigureTypePropertyHaveValue(property.getName(), propertyValue.getValue())) {
                 entity = new FigureProperty(property, propertyValue);
             } else {
                 String msg = "Property " + name + " can not have value - " + value;

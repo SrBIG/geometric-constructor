@@ -20,10 +20,10 @@ import javax.persistence.Table;
 public class FigureProperty {
 
     @ManyToOne
-    @JoinColumn(name = "figure_type_property_id", nullable = false)
+    @JoinColumn(name = "figure_type_property_id")
     FigureTypeProperty property;
 
     @ManyToOne
-    @JoinColumn(name = "figure_type_property_value_id", nullable = false)
+    @JoinColumn(name = "figure_type_property_value_id")
     FigureTypePropertyValue value;
 }

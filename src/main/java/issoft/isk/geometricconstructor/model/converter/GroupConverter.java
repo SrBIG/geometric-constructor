@@ -7,7 +7,6 @@ import issoft.isk.geometricconstructor.model.entity.Figure;
 import issoft.isk.geometricconstructor.model.entity.FigureItem;
 import issoft.isk.geometricconstructor.model.entity.Group;
 import issoft.isk.geometricconstructor.model.entity.GroupItem;
-import issoft.isk.geometricconstructor.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,8 +26,6 @@ import static java.util.Objects.nonNull;
 @Component
 @RequiredArgsConstructor
 public class GroupConverter implements EntityConverter<Group, GroupDTO> {
-    @Autowired
-    final private GroupService groupService;
     @Autowired
     final private ModelMapper modelMapper;
     @Autowired
@@ -67,16 +63,6 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
         entity.setFigures(figureItems);
         entity.setGroups(groupItems);
 
-        Long id = entity.getId();
-
-        if (nonNull(id)) {
-            Optional<Group> byId = groupService.findById(id);
-
-            if (byId.isEmpty()) {
-                entity.setId(null);
-            }
-        }
-
         return entity;
     }
 
@@ -107,11 +93,13 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
     private List<GroupItem> convertToGroupItems(Map<Integer, GroupDTO> groups) {
         List<GroupItem> groupItems = new ArrayList<>();
 
-        for (Map.Entry<Integer, GroupDTO> entry : groups.entrySet()) {
-            Integer number = entry.getKey();
-            Group group = toEntity(entry.getValue());
-            GroupItem figureItem = new GroupItem(number, group);
-            groupItems.add(figureItem);
+        if (nonNull(groups)){
+            for (Map.Entry<Integer, GroupDTO> entry : groups.entrySet()) {
+                Integer number = entry.getKey();
+                Group group = toEntity(entry.getValue());
+                GroupItem figureItem = new GroupItem(number, group);
+                groupItems.add(figureItem);
+            }
         }
 
         return groupItems;
