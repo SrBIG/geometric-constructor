@@ -1,5 +1,6 @@
 package issoft.isk.geometricconstructor.model.converter;
 
+import issoft.isk.geometricconstructor.model.converter.exception.ConvertException;
 import issoft.isk.geometricconstructor.model.dto.FigureDTO;
 import issoft.isk.geometricconstructor.model.dto.GroupDTO;
 import issoft.isk.geometricconstructor.model.entity.Figure;
@@ -14,9 +15,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -57,6 +61,8 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
 
         List<FigureItem> figureItems = convertToFigureItems(dto.getFigures());
         List<GroupItem> groupItems = convertToGroupItems(dto.getGroups());
+
+        checkNumbers(figureItems, groupItems);
 
         entity.setFigures(figureItems);
         entity.setGroups(groupItems);
@@ -122,5 +128,23 @@ public class GroupConverter implements EntityConverter<Group, GroupDTO> {
         }
 
         return figureItems;
+    }
+
+    private void checkNumbers(List<FigureItem> figureItems, List<GroupItem> groupItems) {
+        List<Integer> numbers = figureItems.stream()
+                .map(FigureItem::getNumber)
+                .collect(Collectors.toList());
+
+        groupItems.stream()
+                .map(GroupItem::getNumber)
+                .forEach(numbers::add);
+
+        Set<Integer> set = new HashSet<>(numbers);
+
+        if (set.size() < numbers.size()) {
+            String msg = "Group contains wrong element numbers";
+
+            throw new ConvertException(msg);
+        }
     }
 }
